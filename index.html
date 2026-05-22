@@ -10,7 +10,6 @@
 <meta name="theme-color" content="#0f0f0f">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   body {
     background: #0f0f0f;
     color: #f0ede8;
@@ -22,116 +21,28 @@
     justify-content: center;
     padding: 24px 20px 40px;
   }
-
-  .app {
-    width: 100%;
-    max-width: 380px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .top-label {
-    text-align: center;
-    font-size: 13px;
-    color: #666;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-  }
-
-  .card {
-    background: #1a1a1a;
-    border-radius: 20px;
-    padding: 24px 24px 20px;
-    position: relative;
-  }
-
+  .app { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px; }
+  .top-label { text-align: center; font-size: 13px; color: #666; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .card { background: #1a1a1a; border-radius: 20px; padding: 24px 24px 20px; }
   .card.mine { border-top: 3px solid #1D9E75; }
   .card.moms { border-top: 3px solid #7F77DD; }
-
-  .card-who {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #555;
-    margin-bottom: 10px;
-  }
-
+  .card-who { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
   .card.mine .card-who { color: #1D9E75; }
   .card.moms .card-who { color: #7F77DD; }
-
-  .card-time {
-    font-size: 52px;
-    font-weight: 300;
-    letter-spacing: -2px;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    margin-bottom: 8px;
-    color: #f0ede8;
-  }
-
-  .card-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-
-  .card-date {
-    font-size: 13px;
-    color: #555;
-  }
-
-  .card-period {
-    font-size: 13px;
-    color: #444;
-  }
-
-  .diff-row {
-    text-align: center;
-    font-size: 13px;
-    color: #444;
-    padding: 2px 0;
-  }
-
-  .selects {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 6px;
-  }
-
-  .sel-wrap label {
-    display: block;
-    font-size: 11px;
-    color: #444;
-    margin-bottom: 6px;
-    letter-spacing: 0.05em;
-  }
-
+  .card-time { font-size: 52px; font-weight: 300; letter-spacing: -2px; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 8px; }
+  .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+  .card-date { font-size: 13px; color: #555; }
+  .card-period { font-size: 13px; color: #444; }
+  .selects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .sel-wrap label { display: block; font-size: 11px; color: #444; margin-bottom: 6px; letter-spacing: 0.05em; }
   .sel-wrap select {
-    width: 100%;
-    background: #1a1a1a;
-    color: #f0ede8;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    padding: 8px 10px;
-    font-size: 12px;
-    font-family: inherit;
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-    outline: none;
+    width: 100%; background: #1a1a1a; color: #f0ede8;
+    border: 1px solid #2a2a2a; border-radius: 10px;
+    padding: 8px 10px; font-size: 12px; font-family: inherit;
+    appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;
   }
-
   .sel-wrap select:focus { border-color: #444; }
-
-  .hint {
-    text-align: center;
-    font-size: 11px;
-    color: #333;
-    margin-top: 10px;
-    line-height: 1.6;
-  }
+  .hint { text-align: center; font-size: 11px; color: #333; margin-top: 10px; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -230,14 +141,12 @@ function update() {
   const myTz = document.getElementById("my-tz").value;
   const momTz = document.getElementById("mom-tz").value;
   const my = fmt(myTz), mom = fmt(momTz);
-
   document.getElementById("my-time").textContent = my.time;
   document.getElementById("my-date").textContent = my.date;
   document.getElementById("my-period").textContent = my.period;
   document.getElementById("mom-time").textContent = mom.time;
   document.getElementById("mom-date").textContent = mom.date;
   document.getElementById("mom-period").textContent = mom.period;
-
   const diffH = Math.round((getMs(momTz) - getMs(myTz)) / 3600000);
   const diffText = diffH === 0 ? "时区相同" : diffH > 0 ? `妈妈那里比我快 ${diffH} 小时` : `妈妈那里比我慢 ${Math.abs(diffH)} 小时`;
   document.getElementById("diff-line").textContent = diffText;
@@ -248,47 +157,14 @@ document.getElementById("mom-tz").addEventListener("change", update);
 update();
 setInterval(update, 1000);
 
-// PWA install hint
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isAndroid = /android/i.test(navigator.userAgent);
-const hint = document.getElementById("hint-pwa");
 const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+const hint = document.getElementById("hint-pwa");
 if (!isStandalone) {
-  if (isIOS) hint.textContent = '点击底部 "分享" → "添加到主屏幕" 即可像App一样使用';
-  else if (isAndroid) hint.textContent = '点击浏览器菜单 → "添加到主屏幕" 即可像App一样使用';
+  if (isIOS) hint.textContent = '点击底部"分享"→"添加到主屏幕"，像App一样使用';
+  else if (isAndroid) hint.textContent = '点击浏览器菜单→"添加到主屏幕"，像App一样使用';
 }
-
-// Register service worker for offline
-const swCode = `
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open('tz-v1').then(c => c.add('/')));
-  self.skipWaiting();
-});
-self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-});
-`;
-if ('serviceWorker' in navigator) {
-  const blob = new Blob([swCode], {type:'text/javascript'});
-  const url = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(url).catch(()=>{});
-}
-
-// PWA manifest
-const manifest = {
-  name:"和妈妈的时差",
-  short_name:"时差",
-  start_url:".",
-  display:"standalone",
-  background_color:"#0f0f0f",
-  theme_color:"#0f0f0f",
-  icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230f0f0f' rx='40'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' font-family='system-ui'%3E🕐%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"}]
-};
-const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-const mUrl = URL.createObjectURL(mBlob);
-const link = document.createElement('link');
-link.rel = 'manifest'; link.href = mUrl;
-document.head.appendChild(link);
 </script>
 </body>
 </html>
