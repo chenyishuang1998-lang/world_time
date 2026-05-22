@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>和妈妈的时差</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="时差">
+<meta name="theme-color" content="#0f0f0f">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: #0f0f0f;
+    color: #f0ede8;
+    font-family: -apple-system, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px 40px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .top-label {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .card {
+    background: #1a1a1a;
+    border-radius: 20px;
+    padding: 24px 24px 20px;
+    position: relative;
+  }
+
+  .card.mine { border-top: 3px solid #1D9E75; }
+  .card.moms { border-top: 3px solid #7F77DD; }
+
+  .card-who {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  .card.mine .card-who { color: #1D9E75; }
+  .card.moms .card-who { color: #7F77DD; }
+
+  .card-time {
+    font-size: 52px;
+    font-weight: 300;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-bottom: 8px;
+    color: #f0ede8;
+  }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .card-date {
+    font-size: 13px;
+    color: #555;
+  }
+
+  .card-period {
+    font-size: 13px;
+    color: #444;
+  }
+
+  .diff-row {
+    text-align: center;
+    font-size: 13px;
+    color: #444;
+    padding: 2px 0;
+  }
+
+  .selects {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .sel-wrap label {
+    display: block;
+    font-size: 11px;
+    color: #444;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .sel-wrap select {
+    width: 100%;
+    background: #1a1a1a;
+    color: #f0ede8;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .sel-wrap select:focus { border-color: #444; }
+
+  .hint {
+    text-align: center;
+    font-size: 11px;
+    color: #333;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <p class="top-label" id="diff-line">正在计算时差…</p>
+
+  <div class="card mine">
+    <p class="card-who">我</p>
+    <p class="card-time" id="my-time">--:--:--</p>
+    <div class="card-bottom">
+      <p class="card-date" id="my-date">—</p>
+      <p class="card-period" id="my-period"></p>
+    </div>
+  </div>
+
+  <div class="card moms">
+    <p class="card-who">妈妈</p>
+    <p class="card-time" id="mom-time">--:--:--</p>
+    <div class="card-bottom">
+      <p class="card-date" id="mom-date">—</p>
+      <p class="card-period" id="mom-period"></p>
+    </div>
+  </div>
+
+  <div class="selects">
+    <div class="sel-wrap">
+      <label>我的时区</label>
+      <select id="my-tz"></select>
+    </div>
+    <div class="sel-wrap">
+      <label>妈妈的时区</label>
+      <select id="mom-tz"></select>
+    </div>
+  </div>
+
+  <p class="hint" id="hint-pwa"></p>
+</div>
+
+<script>
+const zones = [
+  ["中国（北京）","Asia/Shanghai"],
+  ["日本（东京）","Asia/Tokyo"],
+  ["韩国（首尔）","Asia/Seoul"],
+  ["泰国（曼谷）","Asia/Bangkok"],
+  ["新加坡","Asia/Singapore"],
+  ["印度（孟买）","Asia/Kolkata"],
+  ["迪拜","Asia/Dubai"],
+  ["德国（柏林）","Europe/Berlin"],
+  ["英国（伦敦）","Europe/London"],
+  ["法国（巴黎）","Europe/Paris"],
+  ["美国（纽约）","America/New_York"],
+  ["美国（芝加哥）","America/Chicago"],
+  ["美国（凤凰城）","America/Phoenix"],
+  ["美国（洛杉矶）","America/Los_Angeles"],
+  ["加拿大（多伦多）","America/Toronto"],
+  ["加拿大（温哥华）","America/Vancouver"],
+  ["澳大利亚（悉尼）","Australia/Sydney"],
+  ["新西兰（奥克兰）","Pacific/Auckland"],
+];
+
+function fillSelect(sel, def) {
+  zones.forEach(([n,tz]) => {
+    const o = document.createElement("option");
+    o.value = tz; o.textContent = n;
+    if (tz === def) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+fillSelect(document.getElementById("my-tz"), "America/Phoenix");
+fillSelect(document.getElementById("mom-tz"), "Asia/Shanghai");
+
+function period(h) {
+  if (h < 6) return "深夜";
+  if (h < 9) return "早上";
+  if (h < 12) return "上午";
+  if (h < 14) return "中午";
+  if (h < 18) return "下午";
+  if (h < 21) return "傍晚";
+  return "晚上";
+}
+
+function fmt(tz) {
+  const now = new Date();
+  const time = now.toLocaleTimeString("zh-CN",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  const date = now.toLocaleDateString("zh-CN",{timeZone:tz,month:"long",day:"numeric",weekday:"short"});
+  const h = parseInt(now.toLocaleString("en-US",{timeZone:tz,hour:"numeric",hour12:false}));
+  return {time, date, period: period(h)};
+}
+
+function getMs(tz) {
+  return new Date(new Date().toLocaleString("en-US",{timeZone:tz})).getTime();
+}
+
+function update() {
+  const myTz = document.getElementById("my-tz").value;
+  const momTz = document.getElementById("mom-tz").value;
+  const my = fmt(myTz), mom = fmt(momTz);
+
+  document.getElementById("my-time").textContent = my.time;
+  document.getElementById("my-date").textContent = my.date;
+  document.getElementById("my-period").textContent = my.period;
+  document.getElementById("mom-time").textContent = mom.time;
+  document.getElementById("mom-date").textContent = mom.date;
+  document.getElementById("mom-period").textContent = mom.period;
+
+  const diffH = Math.round((getMs(momTz) - getMs(myTz)) / 3600000);
+  const diffText = diffH === 0 ? "时区相同" : diffH > 0 ? `妈妈那里比我快 ${diffH} 小时` : `妈妈那里比我慢 ${Math.abs(diffH)} 小时`;
+  document.getElementById("diff-line").textContent = diffText;
+}
+
+document.getElementById("my-tz").addEventListener("change", update);
+document.getElementById("mom-tz").addEventListener("change", update);
+update();
+setInterval(update, 1000);
+
+// PWA install hint
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isAndroid = /android/i.test(navigator.userAgent);
+const hint = document.getElementById("hint-pwa");
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+if (!isStandalone) {
+  if (isIOS) hint.textContent = '点击底部 "分享" → "添加到主屏幕" 即可像App一样使用';
+  else if (isAndroid) hint.textContent = '点击浏览器菜单 → "添加到主屏幕" 即可像App一样使用';
+}
+
+// Register service worker for offline
+const swCode = `
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open('tz-v1').then(c => c.add('/')));
+  self.skipWaiting();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+});
+`;
+if ('serviceWorker' in navigator) {
+  const blob = new Blob([swCode], {type:'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+
+// PWA manifest
+const manifest = {
+  name:"和妈妈的时差",
+  short_name:"时差",
+  start_url:".",
+  display:"standalone",
+  background_color:"#0f0f0f",
+  theme_color:"#0f0f0f",
+  icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230f0f0f' rx='40'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' font-family='system-ui'%3E🕐%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"}]
+};
+const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+const mUrl = URL.createObjectURL(mBlob);
+const link = document.createElement('link');
+link.rel = 'manifest'; link.href = mUrl;
+document.head.appendChild(link);
+</script>
+</body>
+</html>
